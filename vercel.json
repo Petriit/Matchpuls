@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/match-forum",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/fixtures/sync",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
