@@ -1,5 +1,5 @@
 export type BadgeRarity = 'bronze' | 'silver' | 'gold' | 'legend'
-export type CriteriaType = 'post_count' | 'comment_count' | 'likes_received' | 'match_forum' | 'tactic_count' | 'night_post'
+export type CriteriaType = 'post_count' | 'comment_count' | 'likes_received' | 'tactic_count' | 'night_post'
 
 export interface BadgeDef {
   id: string
@@ -20,7 +20,6 @@ export const BADGES: BadgeDef[] = [
   { id: 'legend',      emoji: '👑',  name: 'Legend',       description: '1 000 inlägg – en sann legend',       rarity: 'legend', criteria_type: 'post_count',     criteria_value: 1000 },
   { id: 'commentator', emoji: '💬',  name: 'Pratkvarn',    description: '25 kommentarer i forumet',            rarity: 'bronze', criteria_type: 'comment_count',  criteria_value: 25   },
   { id: 'debater',     emoji: '🗣️', name: 'Debattör',    description: '100 kommentarer i forumet',           rarity: 'silver', criteria_type: 'comment_count',  criteria_value: 100  },
-  { id: 'match_fan',   emoji: '⚡',  name: 'Matchgalen',   description: 'Postat i ett live matchforum',         rarity: 'silver', criteria_type: 'match_forum',    criteria_value: 1    },
   { id: 'analyst',     emoji: '📊',  name: 'Analytiker',   description: '5 inlägg med taktik-ämne',            rarity: 'bronze', criteria_type: 'tactic_count',   criteria_value: 5    },
   { id: 'night_owl',   emoji: '🌙',  name: 'Nattskift',    description: '3 inlägg publicerade 00–04',          rarity: 'silver', criteria_type: 'night_post',     criteria_value: 3    },
   { id: 'liked',       emoji: '❤️', name: 'Folkkär',     description: '50 gillningar på dina inlägg',        rarity: 'silver', criteria_type: 'likes_received', criteria_value: 50   },

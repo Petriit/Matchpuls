@@ -9,7 +9,6 @@ const CRITERIA_LABEL: Record<CriteriaType, string> = {
   post_count:     'inlägg',
   comment_count:  'kommentarer',
   likes_received: 'gillningar',
-  match_forum:    'matchforum-inlägg',
   tactic_count:   'taktik-inlägg',
   night_post:     'nattinlägg (00–04)',
 }

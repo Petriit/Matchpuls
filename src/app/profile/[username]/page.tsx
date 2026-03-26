@@ -32,7 +32,6 @@ export default async function PublicProfilePage({ params }: Props) {
   // Fetch all stats in parallel for global badge computation
   const [
     { data: subsData },
-    { count: matchForumPosts },
     { count: tacticPosts },
     { count: voiceSessions },
     { count: commentCount },
@@ -41,7 +40,6 @@ export default async function PublicProfilePage({ params }: Props) {
     { data: forumBadges },
   ] = await Promise.all([
     supabase.from('subscriptions').select('id, forum:forums(team:teams(name, short_name, color, slug, league:leagues(name, flag_emoji, slug)))').eq('user_id', profile.id),
-    supabase.from('match_forum_posts').select('*', { count: 'exact', head: true }).eq('author_id', profile.id),
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('author_id', profile.id).eq('tag', 'tactic'),
     supabase.from('voice_participants').select('*', { count: 'exact', head: true }).eq('user_id', profile.id),
     supabase.from('comments').select('*', { count: 'exact', head: true }).eq('author_id', profile.id),
@@ -82,7 +80,6 @@ export default async function PublicProfilePage({ params }: Props) {
     likeCount: profile.like_count ?? 0,
     subCount,
     accountAgeDays,
-    matchForumPosts: matchForumPosts ?? 0,
     tacticPosts: tacticPosts ?? 0,
     voiceSessions: voiceSessions ?? 0,
     commentCount: commentCount ?? 0,
@@ -99,7 +96,7 @@ export default async function PublicProfilePage({ params }: Props) {
   // Group forum badges by forum for display
   const forumBadgesByForum: Record<string, { team: Record<string,unknown>; badges: string[] }> = {}
   for (const fb of forumBadges ?? []) {
-    const f = (fb.forum as Record<string,unknown>)
+    const f = (fb.forum as unknown as Record<string,unknown>)
     const t = f?.team as Record<string,unknown>
     const fKey = (t?.slug as string) ?? 'unknown'
     if (!forumBadgesByForum[fKey]) forumBadgesByForum[fKey] = { team: t, badges: [] }

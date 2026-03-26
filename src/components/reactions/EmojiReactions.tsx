@@ -43,9 +43,12 @@ export function EmojiReactions({ postId, session, initialReactions = [] }: Props
   const active = REACTION_EMOJIS.filter(e => (counts[e]?.count ?? 0) > 0)
   const display = showAll ? REACTION_EMOJIS : active
   return (
-    <div className="flex items-center gap-1 flex-wrap mt-2" onMouseEnter={() => setShowAll(true)} onMouseLeave={() => setShowAll(false)}>
+    <div className="flex items-center gap-1 flex-wrap mt-2">
       {!showAll && active.length === 0 && (
-        <button onMouseEnter={() => setShowAll(true)} className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-dashed border-mp-border text-mp-t2 text-xs hover:border-mp-t1">+ 😊</button>
+        <button onClick={() => setShowAll(true)} className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-dashed border-mp-border text-mp-t2 text-xs hover:border-mp-t1">+ 😊</button>
+      )}
+      {showAll && (
+        <button onClick={() => setShowAll(false)} className="flex items-center gap-1 px-2 py-0.5 rounded-full border border-mp-border text-mp-t2 text-xs hover:border-mp-t1">✕</button>
       )}
       {display.map(emoji => {
         const d = counts[emoji]; const hasCount = (d?.count ?? 0) > 0; const reacted = d?.userReacted ?? false

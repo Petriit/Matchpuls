@@ -116,31 +116,6 @@ export interface ReactionCounts {
   [emoji: string]: { count: number; userReacted: boolean }
 }
 
-// ─── Match forum ──────────────────────────────────────────────────────────────
-export type MatchForumStatus = 'pending' | 'active' | 'closed' | 'cleaned'
-
-export interface MatchForum {
-  id: string
-  forum_id: string
-  fixture_id: string
-  status: MatchForumStatus
-  opened_at: string | null
-  closed_at: string | null
-  cleanup_at: string | null
-  created_at: string
-  fixture?: Fixture
-}
-
-export interface MatchForumPost {
-  id: string
-  match_forum_id: string
-  author_id: string
-  content: string
-  like_count: number
-  created_at: string
-  author?: Profile
-}
-
 // ─── Voice chat ───────────────────────────────────────────────────────────────
 export interface VoiceParticipant {
   id: string

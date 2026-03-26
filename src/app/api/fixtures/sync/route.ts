@@ -35,15 +35,18 @@ function findTeam(teams: TeamRow[], apiTeam: Record<string, unknown>): TeamRow |
   if (exact) return exact
 
   // 2. Partial/contains match (handles "Atleti" ↔ "Atletico Madrid", "Barça" ↔ "FC Barcelona", etc.)
+  // Only use apiShort in the "api contains db" direction to avoid false positives
+  // from full names like "RCD Espanyol de Barcelona" matching "Barcelona"
   const MIN = 4
   return teams.find(t => {
     const dbN = norm(t.name)
     const dbS = norm(t.shortName)
     return (
-      (apiName.length  >= MIN && (dbN.includes(apiName)  || apiName.includes(dbN)))  ||
-      (apiShort.length >= MIN && (dbN.includes(apiShort) || apiShort.includes(dbN))) ||
-      (apiName.length  >= MIN && (dbS.includes(apiName)  || apiName.includes(dbS)))  ||
-      (apiShort.length >= MIN && (dbS.includes(apiShort) || apiShort.includes(dbS)))
+      (apiName.length  >= MIN && dbN.includes(apiName))  ||
+      (apiShort.length >= MIN && dbN.includes(apiShort)) ||
+      (apiShort.length >= MIN && apiShort.includes(dbN)) ||
+      (apiShort.length >= MIN && apiShort.includes(dbS)) ||
+      (apiName.length  >= MIN && dbS.includes(apiName))
     )
   })
 }
@@ -68,7 +71,7 @@ export async function POST(req: NextRequest) {
     id: t.id as string,
     name: t.name as string,
     shortName: t.short_name as string,
-    leagueSlug: (t.league as Record<string, unknown>)?.slug as string,
+    leagueSlug: (t.league as unknown as Record<string, unknown>)?.slug as string,
   }))
 
   let inserted = 0

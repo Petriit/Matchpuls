@@ -1,6 +1,6 @@
 'use client'
 import { useState, useCallback, useEffect } from 'react'
-import { Heart, MessageCircle, ChevronDown, ChevronUp, Lock, Pencil, Check, X } from 'lucide-react'
+import { Heart, MessageCircle, ChevronDown, ChevronUp, Pencil, Check, X } from 'lucide-react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { highlightText, timeAgo, avatarColor, avatarInitials, TAG_LABELS, cn } from '@/lib/utils'
@@ -9,7 +9,7 @@ import { EmojiReactions } from '@/components/reactions/EmojiReactions'
 import type { Post, Comment } from '@/types'
 import type { Session } from '@supabase/supabase-js'
 
-interface Props { post: Post; session: Session|null; userAlias:string|null; forumId:string; searchQuery?:string; isNew?:boolean; matchForumActive?:boolean; onTyping?:()=>void }
+interface Props { post: Post; session: Session|null; userAlias:string|null; forumId:string; searchQuery?:string; isNew?:boolean; onTyping?:()=>void }
 
 const TAG_ACCENT: Record<string, string> = {
   match:    'text-mp-blue',
@@ -19,7 +19,7 @@ const TAG_ACCENT: Record<string, string> = {
   other:    'text-mp-green',
 }
 
-export function PostCard({ post, session, userAlias, forumId, searchQuery='', isNew, matchForumActive, onTyping }: Props) {
+export function PostCard({ post, session, userAlias, forumId, searchQuery='', isNew, onTyping }: Props) {
   const supabase = createClient()
   const [liked, setLiked]   = useState(post.user_liked??false)
   const [likes, setLikes]   = useState(post.like_count)
@@ -174,24 +174,16 @@ export function PostCard({ post, session, userAlias, forumId, searchQuery='', is
         </button>
 
         <button
-          onClick={()=>{if(matchForumActive)return;if(!session){window.location.href='/auth/login';return}setShowRep(f=>!f);if(!loaded)load()}}
-          title={matchForumActive?'Låst under match':undefined}
-          className={cn(
-            'flex items-center gap-1.5 transition-colors',
-            showRep ? 'text-mp-t0' : 'text-mp-t1 hover:text-mp-t0',
-            matchForumActive && 'opacity-40 cursor-not-allowed'
-          )}>
-          {matchForumActive
-            ? <><Lock size={12}/><span className="text-xs">Låst</span></>
-            : <><MessageCircle size={13}/><span className="font-display text-base leading-none">{post.comment_count}</span><span className="text-xs text-mp-t2">svar</span></>
-          }
+          onClick={()=>{if(!session){window.location.href='/auth/login';return}setShowRep(f=>!f);if(!loaded)load()}}
+          className={cn('flex items-center gap-1.5 transition-colors', showRep ? 'text-mp-t0' : 'text-mp-t1 hover:text-mp-t0')}>
+          <MessageCircle size={13}/><span className="font-display text-base leading-none">{post.comment_count}</span><span className="text-xs text-mp-t2">svar</span>
         </button>
       </div>
 
       {/* Comment thread */}
       {loaded && comments.length > 0 && (
         <div className="mt-3">
-          {visible.map(c=><CommentThread key={c.id} comment={c} postId={post.id} forumId={forumId} session={session} searchQuery={searchQuery} depth={0} canWrite={!matchForumActive} onTyping={onTyping}/>)}
+          {visible.map(c=><CommentThread key={c.id} comment={c} postId={post.id} forumId={forumId} session={session} searchQuery={searchQuery} depth={0} canWrite={true} onTyping={onTyping}/>)}
           {!showAll&&hidden>0&&(
             <button onClick={()=>{setShowAll(true);if(!loaded)load()}} className="flex items-center gap-1.5 mt-2 text-xs text-mp-t2 hover:text-mp-t1 transition-colors">
               <ChevronDown size={12}/>{hidden} kommentarer till
@@ -206,7 +198,7 @@ export function PostCard({ post, session, userAlias, forumId, searchQuery='', is
       )}
 
       {/* Reply box */}
-      {showRep&&session&&!matchForumActive&&(
+      {showRep&&session&&(
         <div className="flex gap-2 mt-3 items-start animate-fade-in border-t border-mp-border/50 pt-3">
           <div className="relative flex-shrink-0">
             {session.user.user_metadata?.avatar_url

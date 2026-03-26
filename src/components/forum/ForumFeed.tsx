@@ -5,10 +5,9 @@ import { useForumRealtime, useSearch } from '@/hooks'
 import { PostCard } from './PostCard'
 import { NewPostModal } from './NewPostModal'
 import { VoiceChat } from '@/components/voice/VoiceChat'
-import { MatchForumChat } from '@/components/match-forum/MatchForumChat'
-import { Search, SlidersHorizontal, X, Lock } from 'lucide-react'
+import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Post, MatchForum } from '@/types'
+import type { Post } from '@/types'
 import type { Session } from '@supabase/supabase-js'
 interface Props { initialPosts:Post[]; forum:{id:string}; session:Session|null; userAlias:string|null; isSubscribed:boolean; initialTodayCount?:number }
 const TAGS=[{key:'all',label:'Alla'},{key:'match',label:'Match',icon:'fa-regular fa-futbol'},{key:'transfer',label:'Transfer',icon:'fa-solid fa-arrow-right-arrow-left'},{key:'general',label:'Allmänt',icon:'fa-solid fa-comment-dots'},{key:'tactic',label:'Taktik',icon:'fa-solid fa-chess-board'}]
@@ -19,15 +18,8 @@ export function ForumFeed({ initialPosts, forum, session, userAlias, isSubscribe
   const [showModal, setShowModal] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [fromDate, setFromDate] = useState(''); const [toDate, setToDate] = useState('')
-  const [matchForum, setMatchForum] = useState<MatchForum|null>(null)
-  const [activeMatchTab, setActiveMatchTab] = useState<'forum'|'match'>('forum')
   const { query, setQuery, tagFilter, setTagFilter, results, commentMatchCount } = useSearch(posts, [])
   const { newPosts, typingUsers, broadcastTyping, onlineCount, broadcastNewPost } = useForumRealtime(forum.id, session?.user?.id, session?.user?.user_metadata?.username)
-
-  useEffect(() => {
-    const check=async()=>{ const res=await fetch(`/api/match-forum?forumId=${forum.id}`); const d=await res.json(); setMatchForum(d.matchForum??null) }
-    check(); const iv=setInterval(check,30000); return ()=>clearInterval(iv)
-  },[forum.id])
 
   useEffect(() => {
     const h = (e: Event) => setIsSubscribed((e as CustomEvent<{subscribed:boolean}>).detail.subscribed)
@@ -89,7 +81,6 @@ export function ForumFeed({ initialPosts, forum, session, userAlias, isSubscribe
     })
   }, [newPosts])
 
-  const matchForumActive=matchForum?.status==='active'
   const allPosts=useMemo(()=>{ const ids=new Set(newPosts.map(p=>p.id)); return [...newPosts,...posts.filter(p=>!ids.has(p.id))] },[posts,newPosts])
   const filtered=useMemo(()=>{
     const base=results.length>0||query||tagFilter!=='all'?results:allPosts
@@ -117,25 +108,6 @@ export function ForumFeed({ initialPosts, forum, session, userAlias, isSubscribe
         )}
       </div>
       <VoiceChat forumId={forum.id} session={session}/>
-      {matchForum&&(
-        <div className={cn('rounded-xl border mb-3 overflow-hidden',matchForumActive?'border-mp-red/40 bg-gradient-to-r from-mp-red/10 to-transparent':'border-mp-border bg-mp-s1')}>
-          {matchForumActive&&(
-            <div className="flex border-b border-mp-red/20">
-              <button onClick={()=>setActiveMatchTab('forum')} className={cn('flex-1 py-2.5 text-xs font-bold transition-colors',activeMatchTab==='forum'?'bg-mp-s1 text-mp-t0 border-b-2 border-mp-red':'text-mp-t2 hover:text-mp-t1')}>🔒 Vanliga forumet (låst)</button>
-              <button onClick={()=>setActiveMatchTab('match')} className={cn('flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-2',activeMatchTab==='match'?'bg-mp-s1 text-mp-red border-b-2 border-mp-red':'text-mp-red/80 hover:text-mp-red')}><span className="w-1.5 h-1.5 rounded-full bg-mp-red animate-pulse-slow"/>Live Matchforum</button>
-            </div>
-          )}
-          {matchForumActive&&activeMatchTab==='match'&&<div className="p-3"><MatchForumChat matchForum={matchForum} session={session}/></div>}
-          {matchForum.status==='closed'&&<div className="p-3"><div className="text-xs text-mp-amber mb-2">⏳ Historiken finns kvar ett tag till.</div><MatchForumChat matchForum={matchForum} session={session}/></div>}
-        </div>
-      )}
-      {matchForumActive&&activeMatchTab==='forum'&&(
-        <div className="flex items-center gap-3 p-3 bg-mp-red/8 border border-mp-red/20 rounded-xl mb-3">
-          <Lock size={16} className="text-mp-red flex-shrink-0"/>
-          <div className="text-xs"><span className="font-bold text-mp-red">Forumet är låst under matchen.</span><span className="text-mp-t1 ml-1">Gå till Live Matchforum för att diskutera.</span></div>
-          <button onClick={()=>setActiveMatchTab('match')} className="ml-auto text-xs font-bold text-mp-red hover:underline flex-shrink-0">Gå dit →</button>
-        </div>
-      )}
       <div className="sticky top-0 z-10 bg-mp-bg pt-2 pb-2 space-y-2">
         <div className={cn('flex items-center gap-2 bg-mp-s1 border rounded-xl px-3 py-2 transition-colors',query?'border-mp-red/50':'border-mp-border focus-within:border-mp-red/50')}>
           <Search size={14} className="text-mp-t2 flex-shrink-0"/>
@@ -164,7 +136,7 @@ export function ForumFeed({ initialPosts, forum, session, userAlias, isSubscribe
           </div>
         )}
       </div>
-      {typingUsers.length>0&&!matchForumActive&&(
+      {typingUsers.length>0&&(
         <div className="flex items-center gap-2 py-1.5 px-1 text-mp-t2 text-xs animate-fade-in">
           <div className="flex gap-0.5">{[0,1,2].map(i=><span key={i} className="w-1 h-1 rounded-full bg-mp-t2 animate-bounce" style={{animationDelay:`${i*.15}s`}}/>)}</div>
           <span>
@@ -176,11 +148,7 @@ export function ForumFeed({ initialPosts, forum, session, userAlias, isSubscribe
           </span>
         </div>
       )}
-      {matchForumActive ? (
-        <button onClick={()=>setActiveMatchTab('match')} className="flex items-center gap-2 mb-3 mt-1 rounded-lg px-4 py-2 text-sm font-bold bg-mp-s2 border border-mp-border text-mp-t2 cursor-default">
-          <Lock size={14}/>Låst under match
-        </button>
-      ) : !session ? (
+      {!session ? (
         <a href="/auth/login" className="flex items-center gap-2 mb-3 mt-1 btn-primary text-sm">
           <span className="text-base leading-none">+</span> Logga in för att skriva
         </a>
@@ -194,7 +162,7 @@ export function ForumFeed({ initialPosts, forum, session, userAlias, isSubscribe
         </button>
       )}
       {filtered.length===0?<div className="text-center py-16 text-mp-t2"><div className="text-4xl mb-3"><i className="fa-solid fa-magnifying-glass"/></div><p className="font-semibold text-mp-t1 mb-1">Inga inlägg matchar</p><p className="text-sm">Prova ett annat sökord</p></div>:(
-        <div className="space-y-2">{filtered.map(post=><PostCard key={post.id} post={post} session={session} userAlias={userAlias} forumId={forum.id} searchQuery={query} isNew={newPosts.some(p=>p.id===post.id)} matchForumActive={matchForumActive} onTyping={broadcastTyping}/>)}</div>
+        <div className="space-y-2">{filtered.map(post=><PostCard key={post.id} post={post} session={session} userAlias={userAlias} forumId={forum.id} searchQuery={query} isNew={newPosts.some(p=>p.id===post.id)} onTyping={broadcastTyping}/>)}</div>
       )}
       <div className="bg-mp-s2 border border-dashed border-mp-border rounded-lg h-12 flex items-center justify-center mt-4"><span className="text-[8px] font-bold tracking-widest text-mp-t2 uppercase">Annons – mitt i forumet</span></div>
       {showModal&&session&&<NewPostModal forumId={forum.id} session={session} userAlias={userAlias} onClose={()=>setShowModal(false)} onCreated={handlePostCreated} onTyping={broadcastTyping} onBroadcast={broadcastNewPost}/>}

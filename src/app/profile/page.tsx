@@ -31,7 +31,6 @@ export default async function ProfilePage() {
   // Fetch all data in parallel
   const [
     { data: subs }, // includes forum.id for today counts
-    { count: matchForumPosts },
     { count: tacticPosts },
     { count: voiceSessions },
     { count: commentCount },
@@ -41,7 +40,6 @@ export default async function ProfilePage() {
     supabase.from("subscriptions")
       .select("id, forum:forums(id, team:teams(name, short_name, color, slug, league:leagues(name, flag_emoji, slug)))")
       .eq("user_id", session.user.id),
-    supabase.from("match_forum_posts").select("*", { count: "exact", head: true }).eq("author_id", session.user.id),
     supabase.from("posts").select("*", { count: "exact", head: true }).eq("author_id", session.user.id).eq("tag", "tactic"),
     supabase.from("voice_participants").select("*", { count: "exact", head: true }).eq("user_id", session.user.id),
     supabase.from("comments").select("*", { count: "exact", head: true }).eq("author_id", session.user.id),
@@ -59,7 +57,6 @@ export default async function ProfilePage() {
     likeCount: (p?.like_count as number) ?? 0,
     subCount: subs?.length ?? 0,
     accountAgeDays,
-    matchForumPosts: matchForumPosts ?? 0,
     tacticPosts: tacticPosts ?? 0,
     voiceSessions: voiceSessions ?? 0,
     commentCount: commentCount ?? 0,

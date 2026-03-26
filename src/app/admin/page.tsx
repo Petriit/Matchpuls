@@ -29,7 +29,6 @@ export default async function AdminPage() {
   const [
     { count: totalUsers },
     { count: totalPosts },
-    { count: activeMatchForums },
     { data: recentUsers },
     { data: recentPosts },
     { data: adminLog },
@@ -37,10 +36,6 @@ export default async function AdminPage() {
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("posts").select("*", { count: "exact", head: true }),
-    supabase
-      .from("match_forums")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "active"),
     supabase
       .from("profiles")
       .select("id, username, role, joined_at, post_count, is_online")
@@ -94,7 +89,6 @@ export default async function AdminPage() {
         {[
           { n: totalUsers ?? 0, l: "Användare", c: "text-mp-blue" },
           { n: totalPosts ?? 0, l: "Inlägg totalt", c: "text-mp-green" },
-          { n: activeMatchForums ?? 0, l: "Live matchforum", c: "text-mp-red" },
         ].map((s) => (
           <div
             key={s.l}

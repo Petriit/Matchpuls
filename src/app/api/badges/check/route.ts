@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       { count: postCount },
       { data: postsForLikes },
       { count: tacticCount },
-      { count: matchForumCount },
     ] = await Promise.all([
       supabase.from('posts').select('*', { count: 'exact', head: true })
         .eq('author_id', userId).eq('forum_id', forum_id).eq('title', ''),
@@ -36,8 +35,6 @@ export async function POST(req: NextRequest) {
         .eq('author_id', userId).eq('forum_id', forum_id).eq('title', ''),
       supabase.from('posts').select('*', { count: 'exact', head: true })
         .eq('author_id', userId).eq('forum_id', forum_id).eq('tag', 'tactic'),
-      supabase.from('match_forum_posts').select('mfp.id', { count: 'exact', head: true })
-        .eq('author_id', userId),
     ])
 
     // Get post IDs to count comments
@@ -55,7 +52,6 @@ export async function POST(req: NextRequest) {
       post_count:     postCount ?? 0,
       comment_count:  commentCount ?? 0,
       likes_received: likesReceived,
-      match_forum:    matchForumCount ?? 0,
       tactic_count:   tacticCount ?? 0,
       night_post:     0,
     }

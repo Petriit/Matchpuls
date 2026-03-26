@@ -48,13 +48,22 @@ export function VoiceChat({ forumId, session }: Props) {
   const [error, setError]             = useState('')
   const [roomMembers, setRoomMembers] = useState<RoomMember[]>([])
 
-  // Disconnect from LiveKit when component unmounts (user navigates away)
+  // Refs for cleanup — store session_id once joined so unmount doesn't need async lookup
+  const voiceSessionIdRef = useRef<string | null>(null)
+  const userIdRef = useRef<string | null>(null)
+  useEffect(() => { userIdRef.current = session?.user?.id ?? null }, [session])
+
+  // Disconnect from LiveKit + clean DB when component unmounts (user navigates away)
   useEffect(() => {
     return () => {
-      const room = roomRef.current
-      if (room) {
-        room.disconnect()
-        roomRef.current = null
+      roomRef.current?.disconnect()
+      roomRef.current = null
+      const vsId  = voiceSessionIdRef.current
+      const uid   = userIdRef.current
+      if (vsId && uid) {
+        createClient().from('voice_participants').delete()
+          .eq('session_id', vsId).eq('user_id', uid)
+          .then(() => {})  // fire and forget
       }
     }
   }, [])
@@ -140,12 +149,15 @@ export function VoiceChat({ forumId, session }: Props) {
       await room.localParticipant.setMicrophoneEnabled(true)
       syncParticipants(room)
 
-      // Track in DB
+      // Track in DB and store session_id for cleanup
       const { data: vs } = await supabase.from('voice_sessions').select('id').eq('forum_id', forumId).maybeSingle()
-      if (vs) await supabase.from('voice_participants').upsert(
-        { session_id: vs.id, user_id: session.user.id, is_muted: false },
-        { onConflict: 'session_id,user_id' }
-      )
+      if (vs) {
+        voiceSessionIdRef.current = vs.id
+        await supabase.from('voice_participants').upsert(
+          { session_id: vs.id, user_id: session.user.id, is_muted: false },
+          { onConflict: 'session_id,user_id' }
+        )
+      }
 
       setJoined(true)
     } catch (e) {
@@ -163,8 +175,9 @@ export function VoiceChat({ forumId, session }: Props) {
   const leaveCall = useCallback(async () => {
     roomRef.current?.disconnect()
     roomRef.current = null
-    const { data: vs } = await supabase.from('voice_sessions').select('id').eq('forum_id', forumId).maybeSingle()
-    if (vs && session) await supabase.from('voice_participants').delete().eq('session_id', vs.id).eq('user_id', session.user.id)
+    const vsId = voiceSessionIdRef.current
+    if (vsId && session) await supabase.from('voice_participants').delete().eq('session_id', vsId).eq('user_id', session.user.id)
+    voiceSessionIdRef.current = null
     setJoined(false); setParticipants([]); setMuted(false)
   }, [forumId, session])
 

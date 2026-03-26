@@ -12,7 +12,6 @@ export interface GlobalBadgeStats {
   likeCount: number
   subCount: number
   accountAgeDays: number
-  matchForumPosts: number
   tacticPosts: number
   voiceSessions: number
   commentCount: number
@@ -122,13 +121,6 @@ export const GLOBAL_BADGES: GlobalBadgeDef[] = [
     check: s => s.accountAgeDays >= 180,
   },
   // ─── Special ─────────────────────────────────────────────────────────────────
-  {
-    id: 'match_mad',
-    emoji: '⚡',
-    name: 'Matchgalen',
-    description: 'Postat i ett live matchforum',
-    check: s => s.matchForumPosts >= 1,
-  },
   {
     id: 'tactician',
     emoji: '📊',

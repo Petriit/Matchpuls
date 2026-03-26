@@ -32,10 +32,11 @@ function findTeam(teams: DbTeam[], apiTeam: Record<string, unknown>): DbTeam | u
     const dbN = norm(t.name)
     const dbS = norm(t.shortName)
     return (
-      (apiName.length  >= MIN && (dbN.includes(apiName)  || apiName.includes(dbN)))  ||
-      (apiShort.length >= MIN && (dbN.includes(apiShort) || apiShort.includes(dbN))) ||
-      (apiName.length  >= MIN && (dbS.includes(apiName)  || apiName.includes(dbS)))  ||
-      (apiShort.length >= MIN && (dbS.includes(apiShort) || apiShort.includes(dbS)))
+      (apiName.length  >= MIN && dbN.includes(apiName))  ||
+      (apiShort.length >= MIN && dbN.includes(apiShort)) ||
+      (apiShort.length >= MIN && apiShort.includes(dbN)) ||
+      (apiShort.length >= MIN && apiShort.includes(dbS)) ||
+      (apiName.length  >= MIN && dbS.includes(apiName))
     )
   })
 }
@@ -53,7 +54,7 @@ export async function GET(req: NextRequest) {
     .from('teams')
     .select('id, name, short_name, league:leagues(slug)')
   const dbTeams = (teamsRaw ?? [])
-    .filter(t => (t.league as Record<string,unknown>)?.slug === league)
+    .filter(t => (t.league as unknown as Record<string,unknown>)?.slug === league)
     .map(t => ({ id: t.id, name: t.name, shortName: t.short_name }))
 
   // Fixtures already in DB
