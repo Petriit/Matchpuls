@@ -31,7 +31,7 @@ export default function WelcomePage() {
 
           <h1 className="font-display text-3xl tracking-wide mb-2">VÄLKOMMEN!</h1>
           <p className="text-mp-t1 text-sm mb-6 leading-relaxed">
-            Ditt konto är skapat. Du är nu en del av Matchpuls-communityt — Sveriges levande sportforum.
+            Ditt konto är skapat. Du är nu en del av Matchpuls-community — Sveriges levande sportforum.
           </p>
 
           {/* Steps */}
