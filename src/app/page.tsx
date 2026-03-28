@@ -127,12 +127,12 @@ export default async function HomePage() {
           {/* Lower section — guest vs logged-in */}
           <div className="mt-6 pt-5 border-t border-mp-border/40">
             {!session ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex gap-2 w-full sm:w-auto">
-                  <Link href="/auth/register" className="btn-primary px-6 py-2.5 text-sm flex-1 sm:flex-none text-center font-bold">
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-4">
+                <div className="flex gap-2">
+                  <Link href="/auth/register" className="btn-primary px-5 py-2 text-xs sm:text-sm sm:px-6 sm:py-2.5 text-center font-bold">
                     Skapa konto
                   </Link>
-                  <Link href="/auth/login" className="btn-ghost px-6 py-2.5 text-sm flex-1 sm:flex-none text-center">
+                  <Link href="/auth/login" className="btn-ghost px-5 py-2 text-xs sm:text-sm sm:px-6 sm:py-2.5 text-center">
                     Logga in
                   </Link>
                 </div>
