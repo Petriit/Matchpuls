@@ -47,11 +47,8 @@ export default async function HomePage() {
 
       {/* ── HERO ──────────────────────────────────────────── */}
       <div
-        className="relative mb-6 rounded-2xl overflow-hidden border border-mp-border"
-        style={{
-          background: "radial-gradient(ellipse 160% 80% at 50% -20%, #1c0810 0%, #0d0a14 40%, #080b14 75%)",
-          boxShadow: "inset 0 -2px 0 0 rgba(232,48,74,0.3), 0 4px 60px rgba(232,48,74,0.05)",
-        }}
+        className="hero-bg relative mb-6 rounded-2xl overflow-hidden border border-mp-border"
+        style={{ boxShadow: "inset 0 -2px 0 0 rgba(232,48,74,0.3), 0 4px 60px rgba(232,48,74,0.05)" }}
       >
         {/* Pitch SVG lines */}
         <svg className="absolute inset-0 w-full h-full opacity-[0.04] pointer-events-none" viewBox="0 0 900 320" preserveAspectRatio="xMidYMid slice">

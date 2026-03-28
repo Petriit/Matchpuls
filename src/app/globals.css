@@ -32,6 +32,13 @@ html.light {
   --mp-green: 0 160 80;
 }
 
+.hero-bg {
+  background: radial-gradient(ellipse 160% 80% at 50% -20%, #1c0810 0%, #0d0a14 40%, #080b14 75%);
+}
+html.light .hero-bg {
+  background: radial-gradient(ellipse 160% 80% at 50% -20%, rgb(255 220 225) 0%, rgb(255 255 255) 60%);
+}
+
 @layer base {
   * { scrollbar-width: thin; scrollbar-color: #1e2840 transparent; -webkit-tap-highlight-color: transparent; }
   *::-webkit-scrollbar { width: 4px; height: 4px; }
