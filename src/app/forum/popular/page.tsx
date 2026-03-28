@@ -3,7 +3,7 @@ import { createServerComponentClient } from '@/lib/supabase.server'
 import { TeamBadge } from '@/components/ui/TeamBadge'
 import { ForumOnlineCount } from '@/components/ui/ForumOnlineCount'
 import { Flame } from 'lucide-react'
-export const metadata = { title: 'Populära forum' }
+export const metadata = { title: 'Populära lag' }
 export const dynamic = 'force-dynamic'
 
 export default async function PopularPage() {
@@ -39,7 +39,7 @@ export default async function PopularPage() {
   return (
     <div className="w-full px-0 sm:px-4 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-display text-3xl tracking-wide flex items-center gap-2"><Flame size={28} strokeWidth={1.75}/> POPULÄRA FORUM</h1>
+        <h1 className="font-display text-3xl tracking-wide flex items-center gap-2"><Flame size={28} strokeWidth={1.75}/> POPULÄRA LAG</h1>
       </div>
 
       {(leagues ?? []).map((lg: Record<string, unknown>) => {
@@ -70,7 +70,7 @@ export default async function PopularPage() {
                 const todayCount = f.todayCount as number
                 return (
                   <Link key={f.id as string}
-                    href={`/forum/${league?.slug}/${team?.slug}`}
+                    href={`/league/${league?.slug}/${team?.slug}`}
                     className="flex items-center gap-3 bg-mp-s1 border border-mp-border rounded-xl p-3 hover:border-mp-red/40 transition-all group">
                     <TeamBadge color={team?.color as string} shortName={team?.short_name as string} size="md" />
                     <div className="flex-1 min-w-0">

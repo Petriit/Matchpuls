@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { UserMenu } from "@/components/ui/UserMenu";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { cn } from "@/lib/utils";
-import { Home, Flame, Star } from "lucide-react";
+import { Home, Flame, Star, Menu } from "lucide-react";
 import type { Session } from "@supabase/supabase-js";
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 
 const NAV = [
   { href: "/",              label: "Hem",         lucide: Home,  exact: true },
-  { href: "/forum/popular", label: "Populära",    lucide: Flame, exact: false },
+  { href: "/forum/popular", label: "Populära lag", lucide: Flame, exact: false },
   { href: "/mina-forum",    label: "Mina forum",  lucide: Star,  exact: false, authOnly: true },
   { href: "/ligor",         label: "Ligatabeller", fa: "fa-solid fa-trophy", exact: false },
 ];
@@ -25,12 +25,28 @@ export function Navbar({ session, isAdmin }: Props) {
   const isActive = (href: string, exact: boolean) =>
     exact ? pathname === href : pathname.startsWith(href);
 
+  const openDrawer = () =>
+    window.dispatchEvent(new CustomEvent("toggle-mobile-menu"));
+
   return (
-    <header className="h-[60px] bg-mp-s1 border-b border-mp-border flex items-center px-4 flex-shrink-0 z-30 sticky top-0">
+    <header className="h-[60px] bg-mp-s1 border-b border-mp-border flex items-center px-4 flex-shrink-0 z-30 fixed top-0 left-0 right-0">
       <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-mp-red" />
 
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 mr-8">
+      {/* ── MOBILE layout ─────────────────────── */}
+      {/* Hamburger – left, mobile only */}
+      <button
+        onClick={openDrawer}
+        className="md:hidden flex items-center justify-center w-9 h-9 text-mp-t1 hover:text-mp-t0 transition-colors flex-shrink-0"
+        aria-label="Öppna meny"
+      >
+        <Menu size={20} strokeWidth={1.75} />
+      </button>
+
+      {/* Logo – centered on mobile, left on desktop */}
+      <Link
+        href="/"
+        className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2.5 md:static md:left-auto md:translate-x-0 md:mr-8 flex-shrink-0"
+      >
         <div className="w-8 h-8 bg-mp-red flex items-center justify-center flex-shrink-0">
           <svg
             viewBox="0 0 16 16"
@@ -45,7 +61,7 @@ export function Navbar({ session, isAdmin }: Props) {
         </span>
       </Link>
 
-      {/* Nav links */}
+      {/* Nav links – desktop only */}
       <nav className="hidden md:flex items-center h-full">
         {NAV.map((item) => {
           if (item.authOnly && !session) return null;
@@ -69,11 +85,11 @@ export function Navbar({ session, isAdmin }: Props) {
         })}
       </nav>
 
-      {/* Spacer — pushes right side in, not all the way to the edge */}
+      {/* Spacer */}
       <div className="flex-1" />
 
       {/* Right side */}
-      <div className="flex items-center gap-2 mr-4 md:mr-6">
+      <div className="flex items-center gap-2 mr-0 md:mr-6">
         <ThemeToggle />
         {session ? (
           <UserMenu session={session} isAdmin={isAdmin} />

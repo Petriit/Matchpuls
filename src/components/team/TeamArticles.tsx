@@ -25,38 +25,30 @@ function ArticleCard({ a, i, leagueSlug, teamSlug, isAdmin, onEdit }: {
   const displayContent = expanded || !needsTruncation ? a.content : a.content.slice(0, PREVIEW_CHARS) + '…'
 
   return (
-    <article className={`bg-mp-s1 border border-mp-border rounded-xl overflow-hidden hover:border-mp-red/40 transition-all ${i === 0 ? 'p-5' : 'p-4'}`}>
-      {i === 0 && (
-        <span className="text-[10px] font-bold text-mp-red uppercase tracking-widest mb-2 block">
-          📌 Senaste
-        </span>
-      )}
-      <h3 className={`font-bold leading-snug mb-2 ${i === 0 ? 'text-xl' : 'text-base'}`}>
-        {a.title}
-      </h3>
-      <p className="text-mp-t1 leading-relaxed text-sm">
+    <article className="bg-mp-s1 border border-mp-border rounded-lg p-3 hover:border-mp-red/30 transition-all">
+      <h3 className="text-sm font-bold leading-snug mb-1.5">{a.title}</h3>
+      <p className="text-xs text-mp-t1 leading-relaxed">
         {displayContent}
       </p>
       {needsTruncation && (
         <button
           onClick={() => setExpanded(v => !v)}
-          className="flex items-center gap-1 mt-2 text-xs font-semibold text-mp-red hover:text-mp-red/80 transition-colors"
+          className="flex items-center gap-1 mt-1.5 text-[11px] font-semibold text-mp-red hover:opacity-75 transition-opacity"
         >
-          {expanded ? <><ChevronUp size={12}/> Visa mindre</> : <><ChevronDown size={12}/> Visa mer</>}
+          {expanded ? <><ChevronUp size={11}/> Visa mindre</> : <><ChevronDown size={11}/> Visa mer</>}
         </button>
       )}
-      <div className="flex items-center gap-3 mt-3 pt-3 border-t border-mp-border/50 text-xs text-mp-t2">
+      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-mp-border/40 text-[10px] text-mp-t2">
         <span>{a.author?.default_alias ?? a.author?.username ?? 'Redaktion'}</span>
         <span>·</span>
-        <span>{new Date(a.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-        <div className="ml-auto flex items-center gap-3">
+        <span>{new Date(a.created_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}</span>
+        <div className="ml-auto flex items-center gap-2">
           {isAdmin && (
             <button onClick={() => onEdit(a)} className="text-mp-t2 hover:text-mp-t0 transition-colors">
-              <i className="fa-solid fa-pen text-[11px]" />
+              <i className="fa-solid fa-pen text-[10px]" />
             </button>
           )}
-          <Link href={`/forum/${leagueSlug}/${teamSlug}`}
-            className="text-mp-red font-semibold hover:underline text-xs">
+          <Link href={`/forum/${leagueSlug}/${teamSlug}`} className="text-mp-red font-semibold hover:underline">
             Diskutera →
           </Link>
         </div>

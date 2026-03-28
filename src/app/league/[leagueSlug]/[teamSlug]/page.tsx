@@ -17,9 +17,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export const dynamic = 'force-dynamic'
 
+const TAG_COLORS: Record<string, string> = {
+  match: 'text-mp-blue', transfer: 'text-mp-amber',
+  general: 'text-mp-t2', tactic: 'text-mp-purple', other: 'text-mp-green',
+}
+const TAG_LABELS: Record<string, string> = {
+  match: 'Match', transfer: 'Transfer', general: 'Allmänt', tactic: 'Taktik', other: 'Övrigt',
+}
+
 export default async function TeamPage({ params }: Props) {
   const supabase = createServerComponentClient()
-
   const { data: { session } } = await supabase.auth.getSession()
 
   const { data: team } = await supabase
@@ -35,9 +42,7 @@ export default async function TeamPage({ params }: Props) {
     supabase.from('posts').select('*', { count: 'exact', head: true }).eq('forum_id', forum?.id ?? '').eq('title', '').gte('created_at', todayStart.toISOString()),
   ])
 
-  // Check if user is admin/moderator and if subscribed
-  let isAdmin = false
-  let isSubscribed = false
+  let isAdmin = false, isSubscribed = false
   if (session?.user) {
     const [{ data: profile }, { data: sub }] = await Promise.all([
       supabase.from('profiles').select('role').eq('id', session.user.id).single(),
@@ -47,190 +52,173 @@ export default async function TeamPage({ params }: Props) {
     isSubscribed = !!sub
   }
 
-  // Articles = posts with a non-empty title (CreateArticleModal sets title, NewPostModal uses title:'')
   const { data: articles } = await supabase
     .from('posts')
     .select('id, title, content, created_at, author:profiles(username, default_alias)')
-    .eq('forum_id', forum?.id ?? '')
-    .neq('title', '')
-    .order('created_at', { ascending: false })
-    .limit(10)
+    .eq('forum_id', forum?.id ?? '').neq('title', '')
+    .order('created_at', { ascending: false }).limit(10)
 
-  // Regular posts have empty title
   const { data: posts } = await supabase
     .from('posts')
     .select('id, content, like_count, comment_count, created_at, tag, author:profiles(username, default_alias)')
-    .eq('forum_id', forum?.id ?? '')
-    .eq('title', '')
-    .order('created_at', { ascending: false })
-    .limit(15)
+    .eq('forum_id', forum?.id ?? '').eq('title', '')
+    .order('created_at', { ascending: false }).limit(8)
 
   const { data: nextFixture } = await supabase
     .from('fixtures').select('*').eq('team_id', team.id)
     .in('status', ['scheduled', 'live']).order('kickoff_at').limit(1).maybeSingle()
 
   const league = team.league as Record<string, unknown>
+  const fix = nextFixture as Record<string, unknown> | null
 
-  const TAG_COLORS: Record<string, string> = {
-    match: 'bg-mp-blue/20 text-mp-blue',
-    transfer: 'bg-mp-amber/20 text-mp-amber',
-    general: 'bg-mp-t2/20 text-mp-t1',
-    tactic: 'bg-mp-purple/20 text-mp-purple',
-    other: 'bg-mp-green/20 text-mp-green',
-  }
-  const TAG_LABELS: Record<string, string> = {
-    match: '⚽ Match', transfer: '💼 Transfer', general: '💬 Allmänt', tactic: '📊 Taktik', other: '🔗 Övrigt',
-  }
+  const kickoff = fix?.kickoff_at
+    ? new Date(fix.kickoff_at as string).toLocaleDateString('sv-SE', {
+        weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+      })
+    : null
 
   return (
-    <div className="w-full flex gap-6 items-start px-0 sm:px-4 py-5">
+    <div className="w-full min-h-screen">
 
-      {/* ── MAIN COLUMN ─────────────────────────────── */}
-      <div className="flex-1 min-w-0">
+      {/* ── HERO ──────────────────────────────────────── */}
+      <div className="relative overflow-hidden" style={{ background: `linear-gradient(160deg, ${team.color}22 0%, transparent 55%)` }}>
+        {/* Colour stripe left edge */}
+        <div className="absolute left-0 top-0 bottom-0 w-1" style={{ background: team.color }} />
 
-        {/* Back */}
-        <Link href={`/league/${params.leagueSlug}`}
-          className="inline-flex items-center gap-1.5 text-sm text-mp-t2 hover:text-mp-t0 mb-5 transition-colors">
-          ← {league?.flag_emoji as string} {league?.name as string}
-        </Link>
+        <div className="px-4 sm:px-6 pt-4 pb-5">
 
-        {/* Team hero */}
-        <div className="relative overflow-hidden rounded-2xl border border-mp-border mb-5">
-          {/* Colour band behind header */}
-          <div className="absolute inset-0 opacity-10" style={{ background: `linear-gradient(135deg, ${team.color} 0%, transparent 60%)` }} />
-          <div className="relative p-6">
-            <div className="flex items-center gap-5 mb-4">
-              <TeamBadge color={team.color} shortName={team.short_name ?? ''} size="lg" className="shadow-lg" />
-              <div className="flex-1 min-w-0">
-                <h1 className="font-display text-2xl sm:text-4xl tracking-wide leading-none">{team.name}</h1>
-                <p className="text-sm text-mp-t1 mt-1">
-                  {league?.flag_emoji as string} {league?.name as string}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link href={`/forum/${params.leagueSlug}/${params.teamSlug}`}
-                className="btn-primary inline-flex items-center gap-2 text-sm">
-                Öppna forumet
-              </Link>
-              {session && forum && (
-                <SubscribeButton forumId={forum.id} initialSubscribed={isSubscribed} />
-              )}
+          {/* Back link */}
+          <Link href={`/league/${params.leagueSlug}`}
+            className="inline-flex items-center gap-1 text-[11px] text-mp-t2 hover:text-mp-t0 mb-4 transition-colors">
+            ← {league?.flag_emoji as string} {league?.name as string}
+          </Link>
+
+          {/* Team identity + actions */}
+          <div className="flex items-center gap-3 sm:gap-4 mb-4">
+            <TeamBadge color={team.color} shortName={team.short_name ?? ''} size="lg" className="shadow-lg flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h1 className="font-display text-2xl sm:text-4xl tracking-wide leading-none truncate">{team.name}</h1>
+              <p className="text-[11px] text-mp-t2 mt-0.5">{league?.flag_emoji as string} {league?.name as string}</p>
             </div>
           </div>
-        </div>
 
-        {/* Stats strip */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+          {/* CTA row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={`/forum/${params.leagueSlug}/${params.teamSlug}`}
+              className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-4">
+              <i className="fa-solid fa-comments" /> Öppna forum
+            </Link>
+            {session && forum && (
+              <SubscribeButton forumId={forum.id} initialSubscribed={isSubscribed} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── STATS ─────────────────────────────────────── */}
+      <div className="px-4 sm:px-6 py-4 border-b border-mp-border">
+        <div className="grid grid-cols-3 gap-2">
           {[
-            { label: 'Medlemmar', value: (forum?.member_count ?? 0).toLocaleString('sv-SE'), color: 'text-mp-blue' },
-            { label: 'Inlägg', value: (postCount ?? 0).toLocaleString('sv-SE'), color: 'text-mp-green' },
-            { label: 'Idag', value: (todayCount ?? 0).toLocaleString('sv-SE'), color: 'text-mp-red' },
+            { label: 'Antal medlemmar', value: (forum?.member_count ?? 0).toLocaleString('sv-SE'), color: 'text-mp-blue',  border: 'border-l-mp-blue' },
+            { label: 'Antal inlägg',    value: (postCount ?? 0).toLocaleString('sv-SE'),           color: 'text-mp-green', border: 'border-l-mp-green' },
+            { label: 'Inlägg idag',     value: (todayCount ?? 0).toLocaleString('sv-SE'),          color: 'text-mp-red',   border: 'border-l-mp-red' },
           ].map(s => (
-            <div key={s.label} className="bg-mp-s1 border border-mp-border rounded-xl p-4 text-center">
-              <div className={`font-display text-3xl ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-mp-t2 mt-1">{s.label}</div>
+            <div key={s.label} className={`bg-mp-s1 border border-mp-border border-l-2 ${s.border} rounded-lg px-3 py-2.5`}>
+              <div className={`font-display text-2xl leading-none ${s.color}`}>{s.value}</div>
+              <div className="text-[10px] text-mp-t2 mt-1">{s.label}</div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Next fixture */}
-        {nextFixture && (
-          <div className="flex items-center gap-4 p-4 bg-mp-s1 border border-mp-border rounded-xl mb-5">
-            <span className="text-2xl">📅</span>
-            <div className="flex-1">
-              <p className="text-[10px] text-mp-t2 font-bold uppercase tracking-widest mb-0.5">Nästa match</p>
-              <p className="font-bold">
-                {(nextFixture as Record<string, unknown>).home_team as string} vs {(nextFixture as Record<string, unknown>).away_team as string}
-              </p>
-              <p className="text-sm text-mp-red font-semibold">
-                {new Date((nextFixture as Record<string, unknown>).kickoff_at as string).toLocaleDateString('sv-SE', {
-                  weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit',
-                })}
-              </p>
-            </div>
-            {(nextFixture as Record<string, unknown>).status === 'live' && (
-              <span className="flex items-center gap-1.5 text-sm font-bold text-mp-red flex-shrink-0">
-                <span className="w-2 h-2 rounded-full bg-mp-red animate-pulse-slow" />LIVE
+      {/* ── NEXT MATCH ────────────────────────────────── */}
+      <div className="px-4 sm:px-6 py-3 border-b border-mp-border">
+        <div className="text-[9px] font-bold text-mp-t2 uppercase tracking-widest mb-1.5">Nästa match</div>
+        {fix ? (
+          <div className="flex items-center gap-3">
+            {fix.status === 'live' && (
+              <span className="flex items-center gap-1 text-[10px] font-black text-mp-red flex-shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-mp-red animate-pulse-slow" /> LIVE
               </span>
             )}
+            <span className="text-sm font-bold">
+              {fix.home_team as string} <span className="text-mp-t2 font-normal">vs</span> {fix.away_team as string}
+            </span>
+            <span className="text-xs text-mp-red font-semibold ml-auto flex-shrink-0">{kickoff}</span>
           </div>
-        )}
-
-        {/* Articles */}
-        <TeamArticles
-          initialArticles={(articles ?? []) as never[]}
-          forumId={forum?.id ?? ''}
-          session={session}
-          isAdmin={isAdmin}
-          leagueSlug={params.leagueSlug}
-          teamSlug={params.teamSlug}
-        />
-
-        {/* Recent forum posts */}
-        {(posts ?? []).length > 0 && (
-          <div className="mt-8">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-bold text-mp-t2 uppercase tracking-widest">Senaste i forumet</h2>
-              <Link href={`/forum/${params.leagueSlug}/${params.teamSlug}`}
-                className="text-xs text-mp-red font-semibold hover:underline">
-                Se alla →
-              </Link>
-            </div>
-            <div className="space-y-2">
-              {(posts ?? []).map((p: Record<string, unknown>) => {
-                const author = p.author as Record<string, unknown>
-                const tag = p.tag as string
-                return (
-                  <Link key={p.id as string} href={`/forum/${params.leagueSlug}/${params.teamSlug}`}
-                    className="block p-4 bg-mp-s1 border border-mp-border rounded-xl hover:border-mp-red/40 transition-all group">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${TAG_COLORS[tag] ?? TAG_COLORS.general}`}>
-                        {TAG_LABELS[tag] ?? tag}
-                      </span>
-                      <span className="text-xs text-mp-t2 ml-auto">
-                        {(author?.default_alias ?? author?.username) as string}
-                      </span>
-                      <span className="text-xs text-mp-t2">
-                        {new Date(p.created_at as string).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' })}
-                      </span>
-                    </div>
-                    <p className="text-sm text-mp-t1 line-clamp-2 group-hover:text-mp-t0 transition-colors">
-                      {p.content as string}
-                    </p>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-mp-t2">
-                      <span>♥ {p.like_count as number}</span>
-                      <span>💬 {p.comment_count as number}</span>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
+        ) : (
+          <p className="text-xs text-mp-t2 italic">Inga inplanerade matcher</p>
         )}
       </div>
 
-      {/* ── ASIDE – sticky from top ──────────────────── */}
-      <aside className="w-64 flex-shrink-0 hidden lg:flex flex-col gap-4 sticky top-4 self-start">
-        {/* League standings */}
-        <LeagueStandingsWidget
-          leagueSlug={params.leagueSlug}
-          highlightTeam={team.name}
-        />
+      {/* ── MAIN + ASIDE ──────────────────────────────── */}
+      <div className="flex gap-5 items-start px-4 sm:px-6 py-5">
 
-        {/* Ad slot */}
-        <div className="bg-mp-s2 border border-dashed border-mp-border rounded-xl h-40 flex items-center justify-center">
-          <span className="text-[10px] font-bold tracking-widest text-mp-t2 uppercase">Annons</span>
+        {/* Main column */}
+        <div className="flex-1 min-w-0">
+
+          {/* Articles */}
+          <TeamArticles
+            initialArticles={(articles ?? []) as never[]}
+            forumId={forum?.id ?? ''}
+            session={session}
+            isAdmin={isAdmin}
+            leagueSlug={params.leagueSlug}
+            teamSlug={params.teamSlug}
+          />
+
+          {/* Recent forum posts */}
+          {(posts ?? []).length > 0 && (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-[10px] font-bold text-mp-t2 uppercase tracking-widest">Senaste i forumet</h2>
+                <Link href={`/forum/${params.leagueSlug}/${params.teamSlug}`}
+                  className="text-[11px] text-mp-red font-semibold hover:underline">Se alla →</Link>
+              </div>
+              <div className="space-y-1.5">
+                {(posts ?? []).map((p: Record<string, unknown>) => {
+                  const author = p.author as Record<string, unknown>
+                  const tag = p.tag as string
+                  return (
+                    <Link key={p.id as string}
+                      href={`/forum/${params.leagueSlug}/${params.teamSlug}`}
+                      className="flex items-start gap-2.5 p-3 bg-mp-s1 border border-mp-border rounded-lg hover:border-mp-red/30 transition-all group">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <span className={`text-[9px] font-bold uppercase tracking-wide ${TAG_COLORS[tag] ?? TAG_COLORS.general}`}>
+                            {TAG_LABELS[tag] ?? tag}
+                          </span>
+                          <span className="text-[9px] text-mp-t2 ml-auto flex-shrink-0">
+                            {(author?.default_alias ?? author?.username) as string}
+                          </span>
+                        </div>
+                        <p className="text-xs text-mp-t1 line-clamp-2 group-hover:text-mp-t0 transition-colors leading-relaxed">
+                          {p.content as string}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end gap-1 flex-shrink-0 text-[9px] text-mp-t2">
+                        <span>♥ {p.like_count as number}</span>
+                        <span>💬 {p.comment_count as number}</span>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Forum CTA */}
-        <div className="bg-mp-s1 border border-mp-border rounded-xl p-4 text-center">
-          <p className="text-sm text-mp-t1 mb-3">Delta i diskussionen</p>
-          <Link href={`/forum/${params.leagueSlug}/${params.teamSlug}`} className="btn-primary w-full block text-center">
-            Öppna forumet
-          </Link>
-        </div>
-      </aside>
+        {/* Aside — desktop only */}
+        <aside className="w-60 flex-shrink-0 hidden lg:flex flex-col gap-4 sticky top-[68px] self-start">
+          <LeagueStandingsWidget leagueSlug={params.leagueSlug} highlightTeam={team.name} />
+          <div className="bg-mp-s1 border border-mp-border rounded-xl p-4 text-center">
+            <p className="text-xs text-mp-t1 mb-3">Delta i diskussionen</p>
+            <Link href={`/forum/${params.leagueSlug}/${params.teamSlug}`} className="btn-primary w-full block text-center text-sm">
+              Öppna forumet
+            </Link>
+          </div>
+        </aside>
+      </div>
     </div>
   )
 }

@@ -107,7 +107,7 @@ export function PostCard({ post, session, userAlias, forumId, searchQuery='', is
               </div>
           }
         </div>
-        <Link href={`/profile/${post.author?.username ?? ''}`} className="text-sm font-bold tracking-tight hover:text-mp-red transition-colors">
+        <Link href={`/profile/${post.author?.username ?? ''}`} className="text-xs font-bold tracking-tight hover:text-mp-red transition-colors">
           {dispName}
         </Link>
         {(post.author_badge ?? post.author?.badge) && (

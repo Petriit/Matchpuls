@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { MobileSidebarDrawer } from "@/components/layout/MobileSidebarDrawer";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { TwemojiScript } from "@/components/ui/TwemojiScript";
 import { createServerComponentClient } from "@/lib/supabase.server";
@@ -76,6 +77,8 @@ export default async function RootLayout({
       <body className="bg-mp-bg text-mp-t0 font-sans antialiased">
         <div className="flex flex-col h-screen overflow-hidden">
           <Navbar session={session} isAdmin={isAdmin} />
+          {/* Spacer for fixed navbar */}
+          <div className="h-[60px] flex-shrink-0" />
           <div className="flex flex-1 overflow-hidden">
             <Sidebar subscriptions={subscriptions as never[]} isAdmin={isAdmin} leagues={(leaguesRaw ?? []) as never[]} />
             <main className="flex-1 overflow-y-auto">
@@ -85,6 +88,11 @@ export default async function RootLayout({
           <MobileBottomNav
             session={session}
             subscriptionCount={subscriptions.length}
+          />
+          <MobileSidebarDrawer
+            subscriptions={subscriptions as never[]}
+            isAdmin={isAdmin}
+            leagues={(leaguesRaw ?? []) as never[]}
           />
         </div>
         <TwemojiScript />

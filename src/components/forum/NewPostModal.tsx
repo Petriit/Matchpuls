@@ -122,45 +122,48 @@ export function NewPostModal({
   };
   return (
     <div
-      className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/75 flex items-end sm:items-center justify-center z-50 pb-[54px] sm:pb-0 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-mp-s1 border border-mp-border rounded-2xl p-5 w-full sm:max-w-lg my-auto"
+        className="bg-mp-s1 border border-mp-border border-b-0 sm:border-b rounded-t-2xl sm:rounded-2xl p-4 sm:p-5 w-full sm:max-w-lg max-h-[80vh] sm:max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between mb-5">
-          <h2 className="font-display text-2xl tracking-wide">NYTT INLÄGG</h2>
+        {/* Handle bar on mobile */}
+        <div className="flex justify-center mb-3 sm:hidden">
+          <div className="w-10 h-1 rounded-full bg-mp-border" />
+        </div>
+
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-display text-lg sm:text-2xl tracking-wide">NYTT INLÄGG</h2>
           <button onClick={onClose} className="text-mp-t2 hover:text-mp-t0">
-            <X size={22} />
+            <X size={18} />
           </button>
         </div>
-        <div className="flex items-center gap-3 bg-mp-s2 border border-mp-border rounded-lg p-3 mb-4">
-          <div className="flex-1">
-            <div className="text-xs font-bold">{savedAlias || username}</div>
-            <div className="text-[10px] text-mp-t2">
-              {savedAlias
-                ? `Alias · riktigt namn: ${username}`
-                : "Ditt användarnamn"}
+
+        {/* Author row — compact on mobile */}
+        <div className="flex items-center gap-2 bg-mp-s2 border border-mp-border rounded-lg px-3 py-2 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="text-xs font-bold truncate">{savedAlias || username}</div>
+            <div className="text-[10px] text-mp-t2 truncate">
+              {savedAlias ? `Alias · ${username}` : "Ditt användarnamn"}
             </div>
           </div>
           <button
             onClick={() => setShowAlias((v) => !v)}
-            className="btn-ghost text-[10px] py-1 px-2"
+            className="text-[10px] text-mp-t2 hover:text-mp-t0 transition-colors flex-shrink-0"
           >
-            Redigera alias
+            Ändra alias
           </button>
         </div>
+
         {showAlias && (
-          <div className="mb-4 animate-fade-in">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">
-              Alias för detta forum
-            </label>
+          <div className="mb-3 animate-fade-in">
             <div className="flex gap-2">
               <input
                 {...register("alias")}
-                className="mp-input flex-1"
-                placeholder="Välj ett forumnamn..."
+                className="mp-input flex-1 text-sm"
+                placeholder="Forumnamn..."
               />
               <button
                 type="button"
@@ -173,60 +176,57 @@ export function NewPostModal({
             {aliasError && <p className="text-mp-red text-[10px] mt-1">{aliasError}</p>}
           </div>
         )}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">
-              Ämne
-            </label>
-            <select {...register("tag")} className="mp-input">
-              {TAGS.map((t) => (
-                <option key={t.value} value={t.value}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+          {/* Tag + link on same row to save vertical space */}
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">Ämne</label>
+              <select {...register("tag")} className="mp-input text-sm py-1.5">
+                {TAGS.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1">
+              <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">
+                Länk <span className="font-normal">(valfritt)</span>
+              </label>
+              <input
+                {...register("link_url")}
+                className="mp-input text-sm py-1.5"
+                placeholder="https://..."
+              />
+              {errors.link_url && (
+                <p className="text-mp-red text-[10px] mt-0.5">{errors.link_url.message}</p>
+              )}
+            </div>
           </div>
+
           <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">
-              Meddelande
-            </label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">Meddelande</label>
             <textarea
               {...register("content")}
               onKeyDown={() => onTyping?.()}
-              className="mp-input resize-y min-h-[90px]"
+              className="mp-input resize-none min-h-[160px] sm:min-h-[120px] text-sm"
               placeholder="Dela dina tankar..."
             />
             {errors.content && (
-              <p className="text-mp-red text-[10px] mt-1">
-                {errors.content.message}
-              </p>
+              <p className="text-mp-red text-[10px] mt-0.5">{errors.content.message}</p>
             )}
           </div>
-          <div>
-            <label className="text-[9px] font-bold uppercase tracking-widest text-mp-t2 block mb-1">
-              Länk <span className="font-normal text-mp-t2">(valfritt)</span>
-            </label>
-            <input
-              {...register("link_url")}
-              className="mp-input"
-              placeholder="https://..."
-            />
-            {errors.link_url && (
-              <p className="text-mp-red text-[10px] mt-1">
-                {errors.link_url.message}
-              </p>
-            )}
-          </div>
+
           {submitError && (
-            <div className="bg-mp-red/10 border border-mp-red/30 rounded-lg px-3 py-2 text-sm text-mp-red">
+            <div className="bg-mp-red/10 border border-mp-red/30 rounded-lg px-3 py-2 text-xs text-mp-red">
               {submitError}
             </div>
           )}
+
           <div className="flex gap-2 pt-1">
-            <button type="submit" disabled={submitting} className="btn-primary">
-              {submitting ? "Publicerar..." : "Publicera inlägg"}
+            <button type="submit" disabled={submitting} className="btn-primary flex-1 text-sm py-2">
+              {submitting ? "Publicerar..." : "Publicera"}
             </button>
-            <button type="button" onClick={onClose} className="btn-ghost">
+            <button type="button" onClick={onClose} className="btn-ghost text-sm py-2 px-4">
               Avbryt
             </button>
           </div>

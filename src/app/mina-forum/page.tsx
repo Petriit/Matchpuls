@@ -31,7 +31,10 @@ export default async function MinaForumPage() {
 
   return (
     <div className="w-full px-0 sm:px-4 py-6">
-      <div className="flex items-center justify-between mb-5"><h1 className="font-display text-2xl tracking-wide flex items-center gap-2"><Star size={24} strokeWidth={1.75}/> MINA FORUM</h1><Link href="/forum/popular" className="text-mp-red text-sm font-semibold hover:underline">+ Utforska fler</Link></div>
+      <div className="flex items-center gap-3 mb-5 flex-wrap">
+        <h1 className="font-display text-2xl tracking-wide flex items-center gap-2"><Star size={24} strokeWidth={1.75}/> MINA FORUM</h1>
+        <Link href="/forum/popular" className="text-mp-red text-sm font-semibold hover:underline">+ Utforska fler</Link>
+      </div>
       {!subs||subs.length===0?(
         <div className="bg-mp-s1 border border-dashed border-mp-border rounded-2xl p-10 text-center"><div className="text-5xl mb-4">⭐</div><h2 className="font-bold text-base mb-2">Inga prenumerationer än</h2><p className="text-mp-t1 text-sm mb-5">Gå in på ett lag och tryck ☆ Prenumerera.</p><Link href="/forum/popular" className="btn-primary">Utforska populära forum</Link></div>
       ):(

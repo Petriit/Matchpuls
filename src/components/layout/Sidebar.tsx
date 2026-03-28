@@ -53,7 +53,7 @@ export function Sidebar({ subscriptions, isAdmin, leagues }: Props) {
 
   const navItems = [
     { href: "/",              label: "Hem",            icon: <Home size={15} strokeWidth={1.75}/> },
-    { href: "/forum/popular", label: "Populära forum", icon: <Flame size={15} strokeWidth={1.75}/> },
+    { href: "/forum/popular", label: "Populära lag",   icon: <Flame size={15} strokeWidth={1.75}/> },
     { href: "/mina-forum",    label: "Mina forum",     icon: <Star size={15} strokeWidth={1.75}/> },
     { href: "/profile",       label: "Min sida",       icon: <User size={15} strokeWidth={1.75}/> },
     ...(isAdmin ? [{ href: "/admin", label: "Admin", icon: <i className="fa-solid fa-shield-halved fa-sm"/> }] : []),
@@ -87,39 +87,6 @@ export function Sidebar({ subscriptions, isAdmin, leagues }: Props) {
           );
         })}
       </div>
-
-      {/* ── MY FORUMS ──────────────────────────────── */}
-      {subscriptions.length > 0 && (
-        <div className="border-t border-mp-border pt-3 pb-2">
-          <div className="flex items-center justify-between px-4 mb-1">
-            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-mp-t2 flex items-center gap-1.5">
-              <Star size={14} strokeWidth={1.75}/> Mina forum
-            </p>
-            <span className="text-[9px] font-bold text-mp-red bg-mp-red/10 px-1.5 py-0.5">
-              {subscriptions.length}
-            </span>
-          </div>
-          {subscriptions.map((sub) => {
-            const t = sub.forum?.team;
-            const active = pathname.includes(t?.slug ?? "");
-            return (
-              <Link
-                key={sub.id}
-                href={`/forum/${t?.league?.slug}/${t?.slug}`}
-                className={cn(
-                  "flex items-center gap-2.5 px-4 py-1.5 text-sm font-semibold transition-all border-l-2",
-                  active
-                    ? "border-l-mp-red text-mp-t0 bg-mp-s2"
-                    : "border-l-transparent text-mp-t1 hover:text-mp-t0 hover:bg-mp-s2/50",
-                )}
-              >
-                <TeamBadge color={t?.color ?? '#333'} shortName={t?.short_name ?? ''} size="xs" />
-                <span className="truncate">{t?.name}</span>
-              </Link>
-            );
-          })}
-        </div>
-      )}
 
       {/* ── SPORT SECTIONS ─────────────────────────── */}
       <div className="border-t border-mp-border flex-1">
@@ -233,6 +200,39 @@ export function Sidebar({ subscriptions, isAdmin, leagues }: Props) {
           </div>
         )}
       </div>
+
+      {/* ── MY FORUMS ──────────────────────────────── */}
+      {subscriptions.length > 0 && (
+        <div className="border-t border-mp-border pt-3 pb-2">
+          <div className="flex items-center justify-between px-4 mb-1">
+            <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-mp-t2 flex items-center gap-1.5">
+              <Star size={14} strokeWidth={1.75}/> Mina forum
+            </p>
+            <span className="text-[9px] font-bold text-mp-red bg-mp-red/10 px-1.5 py-0.5">
+              {subscriptions.length}
+            </span>
+          </div>
+          {subscriptions.map((sub) => {
+            const t = sub.forum?.team;
+            const active = pathname.includes(t?.slug ?? "");
+            return (
+              <Link
+                key={sub.id}
+                href={`/forum/${t?.league?.slug}/${t?.slug}`}
+                className={cn(
+                  "flex items-center gap-2.5 px-4 py-1.5 text-sm font-semibold transition-all border-l-2",
+                  active
+                    ? "border-l-mp-red text-mp-t0 bg-mp-s2"
+                    : "border-l-transparent text-mp-t1 hover:text-mp-t0 hover:bg-mp-s2/50",
+                )}
+              >
+                <TeamBadge color={t?.color ?? '#333'} shortName={t?.short_name ?? ''} size="xs" />
+                <span className="truncate">{t?.name}</span>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </aside>
   );
 }
